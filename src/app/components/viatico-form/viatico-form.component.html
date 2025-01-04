@@ -1,0 +1,202 @@
+<div class="container mt-4">
+  <h2 class="text-center">Registro & Aprobación de Viáticos</h2>
+  <hr />
+
+  <!-- Formulario Principal -->
+  <form class="mt-4">
+    <!-- Registro de Viático -->
+    <div class="border p-4 rounded shadow-sm mb-4">
+      <h3 class="text-primary">Registro de Viático</h3>
+      <fieldset [disabled]="aprobado">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label for="fechaRegistro" class="form-label">Fecha de Registro:</label>
+            <input
+              id="fechaRegistro"
+              type="date"
+              class="form-control"
+              [(ngModel)]="viatico.fechaRegistro"
+              name="fechaRegistro"
+              required
+              [min]="getCurrentDate()"
+              aria-describedby="fechaRegistroHelp"
+            />
+            <small id="fechaRegistroHelp" class="form-text text-muted">Selecciona una fecha a partir de hoy.</small>
+            <div *ngIf="fechaRegistroInvalid" class="text-danger mt-1">
+              La fecha de registro no puede ser anterior a la fecha actual.
+            </div>
+          </div>
+          <div class="col-md-6">
+            <label for="nombrePersona" class="form-label">Nombre:</label>
+            <input
+              id="nombrePersona"
+              class="form-control"
+              [(ngModel)]="viatico.nombrePersona"
+              name="nombrePersona"
+              required
+            />
+          </div>
+          <div class="col-md-6">
+            <label for="identificacion" class="form-label">Identificación:</label>
+            <input
+              id="identificacion"
+              class="form-control"
+              [(ngModel)]="viatico.identificacion"
+              name="identificacion"
+              required
+              pattern="^[0-9]{10}$"
+              (input)="validarIdentificacion()"
+            />
+            <div *ngIf="identificacionInvalid" class="text-danger mt-1">
+              La cédula debe tener 10 dígitos.
+            </div>
+          </div>
+          <div class="col-md-6">
+            <label for="motivoViaje" class="form-label">Motivo del Viaje:</label>
+            <textarea
+              id="motivoViaje"
+              class="form-control"
+              [(ngModel)]="viatico.motivoViaje"
+              name="motivoViaje"
+              required
+            ></textarea>
+          </div>
+          <div class="col-md-6">
+            <label for="clienteProyecto" class="form-label">Cliente/Proyecto:</label>
+            <input
+              id="clienteProyecto"
+              class="form-control"
+              [(ngModel)]="viatico.clienteProyecto"
+              name="clienteProyecto"
+              required
+            />
+          </div>
+          <div class="col-md-6">
+            <label for="tipoViaje" class="form-label">Tipo de Viaje:</label>
+            <select
+              id="tipoViaje"
+              class="form-control"
+              [(ngModel)]="viatico.tipoViaje"
+              name="tipoViaje"
+              required
+              (change)="cambiarTipoViaje()"
+            >
+              <option value="nacional">Nacional</option>
+              <option value="internacional">Internacional</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Fechas del Viaje -->
+        <div class="row mt-3" *ngIf="viatico.tipoViaje === 'internacional'">
+          <div class="col-md-6">
+            <label for="fechaInicioViaje" class="form-label">Fecha de Inicio (Internacional):</label>
+            <input
+              id="fechaInicioViaje"
+              type="date"
+              class="form-control"
+              [(ngModel)]="viatico.fechaInicioViaje"
+              name="fechaInicioViaje"
+              required
+              [min]="getCurrentDate()"
+            />
+          </div>
+          <div class="col-md-6">
+            <label for="fechaFinViaje" class="form-label">Fecha de Fin (Internacional):</label>
+            <input
+              id="fechaFinViaje"
+              type="date"
+              class="form-control"
+              [(ngModel)]="viatico.fechaFinViaje"
+              name="fechaFinViaje"
+              required
+              [min]="viatico.fechaInicioViaje"
+            />
+          </div>
+        </div>
+
+        <div class="row mt-3" *ngIf="viatico.tipoViaje === 'nacional'">
+          <div class="col-md-6">
+            <label for="fechaInvitacion" class="form-label">Fecha de Invitación (Nacional):</label>
+            <input
+              id="fechaInvitacion"
+              type="date"
+              class="form-control"
+              [(ngModel)]="viatico.fechaInvitacion"
+              name="fechaInvitacion"
+              [min]="getCurrentDate()"
+            />
+          </div>
+        </div>
+
+        <button
+          type="button"
+          class="btn btn-primary mt-4"
+          (click)="registrarViatico()"
+          [disabled]="aprobado || !viatico.identificacion || !viatico.fechaRegistro"
+        >
+          Registrar
+        </button>
+      </fieldset>
+    </div>
+
+    <!-- Aprobación de Viático -->
+    <div class="border p-4 rounded shadow-sm">
+      <h3 class="text-success">Aprobación</h3>
+      <fieldset [disabled]="!aprobado">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label for="identificacionBusqueda" class="form-label">Identificación del Registro:</label>
+            <input
+              id="identificacionBusqueda"
+              class="form-control"
+              [(ngModel)]="aprobacion.identificacionBusqueda"
+              name="identificacionBusqueda"
+              required
+              (blur)="buscarViatico()"
+            />
+          </div>
+          <div class="col-md-6">
+            <label for="nombreAprobador" class="form-label">Nombre del Aprobador:</label>
+            <input
+              id="nombreAprobador"
+              class="form-control"
+              [(ngModel)]="aprobacion.nombreAprobador"
+              name="nombreAprobador"
+              required
+            />
+          </div>
+          <div class="col-md-6">
+            <label for="identificacionAprobador" class="form-label">Identificación del Aprobador:</label>
+            <input
+              id="identificacionAprobador"
+              class="form-control"
+              [(ngModel)]="aprobacion.identificacionAprobador"
+              name="identificacionAprobador"
+              required
+            />
+          </div>
+          <div class="col-md-6">
+            <label for="emailAprobador" class="form-label">Correo del Aprobador:</label>
+            <input
+              id="emailAprobador"
+              type="email"
+              class="form-control"
+              [(ngModel)]="aprobacion.emailAprobador"
+              name="emailAprobador"
+              required
+            />
+          </div>
+        </div>
+        <button
+          type="button"
+          class="btn btn-success mt-4"
+          (click)="aprobarViatico()"
+          [disabled]="!aprobado"
+        >
+          Aprobar
+        </button>
+      </fieldset>
+    </div>
+  </form>
+</div>
